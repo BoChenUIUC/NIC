@@ -40,10 +40,14 @@ import torch.optim as optim
 from torch.utils.data import DataLoader
 from torchvision import transforms
 
-from compressai.datasets import ImageFolder
-from compressai.losses import RateDistortionLoss
-from compressai.optimizers import net_aux_optimizer
-from compressai.zoo import image_models, bmshj2018_factorized, mbt2018_mean, cheng2020_attn, mbt2018
+# from compressai.datasets import ImageFolder
+# from compressai.losses import RateDistortionLoss
+# from compressai.optimizers import net_aux_optimizer
+# from compressai.zoo import image_models, bmshj2018_factorized, mbt2018_mean, cheng2020_attn, mbt2018
+from image import ImageFolder
+from rate_distortion import RateDistortionLoss
+from optimizers import net_aux_optimizer
+from models import image_models, bmshj2018_factorized, mbt2018_mean, cheng2020_attn, mbt2018
 
 
 class AverageMeter:
