@@ -41,7 +41,6 @@ from compressai import (
     typing,
     zoo,
 )
-print('??????')
 
 try:
     from .version import __version__

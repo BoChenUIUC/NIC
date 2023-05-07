@@ -46,7 +46,7 @@ from torchvision import transforms
 # from compressai.zoo import image_models, bmshj2018_factorized, mbt2018_mean, cheng2020_attn, mbt2018
 from image import ImageFolder
 from rate_distortion import RateDistortionLoss
-from optimizers import net_aux_optimizer
+from net_aux import net_aux_optimizer
 from models import image_models, bmshj2018_factorized, mbt2018_mean, cheng2020_attn, mbt2018
 
 
