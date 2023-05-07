@@ -1468,16 +1468,6 @@ def load_pretrained(state_dict: Dict[str, Tensor]) -> Dict[str, Tensor]:
     state_dict = {rename_key(k): v for k, v in state_dict.items()}
     return state_dict
 
-image_models = {
-    "bmshj2018-factorized": bmshj2018_factorized,
-    "bmshj2018-factorized-relu": bmshj2018_factorized_relu,
-    "bmshj2018-hyperprior": bmshj2018_hyperprior,
-    "mbt2018-mean": mbt2018_mean,
-    "mbt2018": mbt2018,
-    "cheng2020-anchor": cheng2020_anchor,
-    "cheng2020-attn": cheng2020_attn,
-}
-
 __all__ = [
     "bmshj2018_factorized",
     "bmshj2018_factorized_relu",
@@ -1885,3 +1875,14 @@ def cheng2020_attn(quality, metric="mse", pretrained=False, progress=True, **kwa
         "cheng2020-attn", metric, quality, pretrained, progress, **kwargs
     )
 
+
+
+image_models = {
+    "bmshj2018-factorized": bmshj2018_factorized,
+    "bmshj2018-factorized-relu": bmshj2018_factorized_relu,
+    "bmshj2018-hyperprior": bmshj2018_hyperprior,
+    "mbt2018-mean": mbt2018_mean,
+    "mbt2018": mbt2018,
+    "cheng2020-anchor": cheng2020_anchor,
+    "cheng2020-attn": cheng2020_attn,
+}
