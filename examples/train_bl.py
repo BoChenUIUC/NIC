@@ -164,11 +164,11 @@ def test_epoch(epoch, test_dataloader, model, criterion):
     return loss.avg
 
 
-def save_checkpoint(state, is_best, lambda, model_name, savedir):
-    ckpt_path = savedir + f'{model_name}_{lambda}_ckpt.pth'
+def save_checkpoint(state, is_best, lmbda, model_name, savedir):
+    ckpt_path = savedir + f'{model_name}_{lmbda}_ckpt.pth'
     torch.save(state, ckpt_path)
     if is_best:
-        shutil.copyfile(filename, savedir + f'{model_name}_{lambda}_best.pth')
+        shutil.copyfile(filename, savedir + f'{model_name}_{lmbda}_best.pth')
 
 
 def parse_args(argv):
@@ -356,7 +356,7 @@ def main(argv):
                     "lr_scheduler": lr_scheduler.state_dict(),
                 },
                 is_best,
-                args.lambda,
+                args.lmbda,
                 args.model,
                 args.savedir,
             )
