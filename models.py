@@ -27,6 +27,10 @@
 # OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+
+from typing import Dict
+
+from torch import Tensor
 from torch.hub import load_state_dict_from_url
 
 from compressai.models import (
@@ -1320,10 +1324,6 @@ class JointAutoregressiveHierarchicalPriors(MeanScaleHyperprior):
                 y_hat[:, :, hp : hp + 1, wp : wp + 1] = rv
 
 
-
-from typing import Dict
-
-from torch import Tensor
 
 
 def rename_key(key: str) -> str:
