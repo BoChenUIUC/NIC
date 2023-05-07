@@ -164,10 +164,11 @@ def test_epoch(epoch, test_dataloader, model, criterion):
     return loss.avg
 
 
-def save_checkpoint(state, is_best, filename='factorizedprior_q4_baseline_checkpoint.pth.tar'):
-    torch.save(state, filename)
+def save_checkpoint(state, is_best, lambda, model_name, savedir):
+    ckpt_path = savedir + f'{model_name}_{lambda}_ckpt.pth'
+    torch.save(state, ckpt_path)
     if is_best:
-        shutil.copyfile(filename, 'factorizedprior_q4_baseline_checkpoint_best_loss.pth.tar')
+        shutil.copyfile(filename, savedir + f'{model_name}_{lambda}_best.pth')
 
 
 def parse_args(argv):
@@ -246,6 +247,7 @@ def parse_args(argv):
         help="gradient clipping max norm (default: %(default)s",
     )
     parser.add_argument("--checkpoint", type=str, help="Path to a checkpoint")
+    parser.add_argument("--savedir", type=str, default='backup/', help="Path to save")
     args = parser.parse_args(argv)
     return args
 
@@ -354,6 +356,9 @@ def main(argv):
                     "lr_scheduler": lr_scheduler.state_dict(),
                 },
                 is_best,
+                args.lambda,
+                args.model,
+                args.savedir,
             )
 
 
