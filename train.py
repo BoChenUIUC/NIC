@@ -317,7 +317,7 @@ def main(argv):
     criterion = RateDistortionLoss(lmbda=args.lmbda)
 
     # TODO: BASELINE
-    factorizedprior_model = bmshj2018_factorized(quality=4, metric='mse', pretrained=False, progress=True)
+    factorizedprior_model = bmshj2018_factorized(quality=4, metric='mse', pretrained=True, progress=True)
     net.load_state_dict(factorizedprior_model.state_dict())
 
     last_epoch = 0
