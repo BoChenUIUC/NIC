@@ -1479,7 +1479,7 @@ __all__ = [
     "cheng2020_attn",
 ]
 
-model_architectures = {
+image_models = {
     "bmshj2018-factorized": FactorizedPrior,
     "bmshj2018_factorized_relu": FactorizedPriorReLU,
     "bmshj2018-hyperprior": ScaleHyperprior,
@@ -1690,7 +1690,7 @@ cfgs = {
 def _load_model(
     architecture, metric, quality, pretrained=False, progress=True, **kwargs
 ):
-    if architecture not in model_architectures:
+    if architecture not in image_models:
         raise ValueError(f'Invalid architecture name "{architecture}"')
 
     if quality not in cfgs[architecture]:
@@ -1707,10 +1707,10 @@ def _load_model(
         url = model_urls[architecture][metric][quality]
         state_dict = load_state_dict_from_url(url, progress=progress)
         state_dict = load_pretrained(state_dict)
-        model = model_architectures[architecture].from_state_dict(state_dict)
+        model = image_models[architecture].from_state_dict(state_dict)
         return model
 
-    model = model_architectures[architecture](*cfgs[architecture][quality], **kwargs)
+    model = image_models[architecture](*cfgs[architecture][quality], **kwargs)
     return model
 
 
