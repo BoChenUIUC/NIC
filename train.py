@@ -40,13 +40,6 @@ import torch.optim as optim
 from torch.utils.data import DataLoader
 from torchvision import transforms
 
-# from compressai.datasets import ImageFolder
-# from compressai.losses import RateDistortionLoss
-# from compressai.optimizers import net_aux_optimizer
-# from compressai.zoo import image_models, bmshj2018_factorized, mbt2018_mean, cheng2020_attn, mbt2018
-from image import ImageFolder
-from rate_distortion import RateDistortionLoss
-from net_aux import net_aux_optimizer
 from models import image_models, bmshj2018_factorized, mbt2018_mean, cheng2020_attn, mbt2018
 
 
@@ -65,6 +58,152 @@ class AverageMeter:
         self.count += n
         self.avg = self.sum / self.count
 
+
+from typing import Any, Dict, Mapping, cast
+
+from compressai.registry import OPTIMIZERS
+
+def net_aux_optimizer(
+    net: nn.Module, conf: Mapping[str, Any]
+) -> Dict[str, optim.Optimizer]:
+    """Returns separate optimizers for net and auxiliary losses.
+
+    Each optimizer operates on a mutually exclusive set of parameters.
+    """
+    parameters = {
+        "net": {
+            name
+            for name, param in net.named_parameters()
+            if param.requires_grad and not name.endswith(".quantiles")
+        },
+        "aux": {
+            name
+            for name, param in net.named_parameters()
+            if param.requires_grad and name.endswith(".quantiles")
+        },
+    }
+
+    # Make sure we don't have an intersection of parameters
+    params_dict = dict(net.named_parameters())
+    inter_params = parameters["net"] & parameters["aux"]
+    union_params = parameters["net"] | parameters["aux"]
+    assert len(inter_params) == 0
+    assert len(union_params) - len(params_dict.keys()) == 0
+
+    def make_optimizer(key):
+        kwargs = dict(conf[key])
+        del kwargs["type"]
+        params = (params_dict[name] for name in sorted(parameters[key]))
+        return OPTIMIZERS[conf[key]["type"]](params, **kwargs)
+
+    optimizer = {key: make_optimizer(key) for key in ["net", "aux"]}
+
+    return cast(Dict[str, optim.Optimizer], optimizer)
+
+
+from pathlib import Path
+
+from PIL import Image
+from torch.utils.data import Dataset
+
+import os
+
+class ImageFolder(Dataset):
+    """Load an image folder database. Training and testing image samples
+    are respectively stored in separate directories:
+
+    .. code-block::
+
+        - rootdir/
+            - train/
+                - img000.png
+                - img001.png
+            - test/
+                - img000.png
+                - img001.png
+
+    Args:
+        root (string): root directory of the dataset
+        transform (callable, optional): a function or transform that takes in a
+            PIL image and returns a transformed version
+        split (string): split mode ('train' or 'val')
+    """
+
+    def __init__(self, root, transform=None, split="train"):
+        #splitdir = Path(root) / split
+
+        #if not splitdir.is_dir():
+        #    raise RuntimeError(f'Invalid directory "{root}"')
+
+        #self.samples = sorted(f for f in splitdir.iterdir() if f.is_file())
+        self.samples = [os.path.join(root, file) for file in os.listdir(root)]
+
+        self.transform = transform
+
+    def __getitem__(self, index):
+        """
+        Args:
+            index (int): Index
+
+        Returns:
+            img: `PIL.Image.Image` or transformed `PIL.Image.Image`.
+        """
+        img = Image.open(self.samples[index]).convert("RGB")
+        if self.transform:
+            return self.transform(img)
+        return img
+
+    def __len__(self):
+        return len(self.samples)
+
+
+from pytorch_msssim import ms_ssim
+
+class RateDistortionLoss(nn.Module):
+    """Custom rate distortion loss with a Lagrangian parameter."""
+
+    def __init__(self, lmbda=0.01, metric="mse", return_type="all"):
+        super().__init__()
+        if metric == "mse":
+            self.metric = nn.MSELoss()
+        elif metric == "ms-ssim":
+            self.metric = ms_ssim
+        else:
+            raise NotImplementedError(f"{metric} is not implemented!")
+        self.lmbda = lmbda
+        self.return_type = return_type
+
+    def forward(self, output, target):
+        N, _, H, W = target.size()
+        out = {}
+        num_pixels = N * H * W
+
+        out["bpp_loss"] = sum(
+            (torch.log(likelihoods).sum() / (-math.log(2) * num_pixels))
+            for likelihoods in output["likelihoods"].values()
+        )
+        if self.metric == ms_ssim:
+            out["ms_ssim_loss"] = self.metric(output["x_hat"], target, data_range=1)
+            distortion = 1 - out["ms_ssim_loss"]
+        else:
+            out["mse_loss"] = self.metric(output["x_hat"], target)
+            distortion = 255**2 * out["mse_loss"]
+
+        #out["loss"] = self.lmbda * distortion + out["bpp_loss"] + 1e-3 * output["norm_sum"]
+        #BASELINE LOSS:
+        out["loss"] = self.lmbda * distortion + out["bpp_loss"]
+        
+        out["psnr"] = 10 * math.log10(1 / (out["mse_loss"]))
+
+        #out["y_norm1"] = output["y_norm1"]
+        #out["y_norm2"] = output["y_norm2"]
+        #out["y_norm10"] = output["y_norm10"]
+        #out["q_norm"] = output["q_norm"]
+
+        if self.return_type == "all":
+            return out
+        else:
+            return out[self.return_type]
 
 class CustomDataParallel(nn.DataParallel):
     """Custom DataParallel to access the module methods."""
