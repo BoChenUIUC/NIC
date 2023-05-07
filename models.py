@@ -1468,6 +1468,15 @@ def load_pretrained(state_dict: Dict[str, Tensor]) -> Dict[str, Tensor]:
     state_dict = {rename_key(k): v for k, v in state_dict.items()}
     return state_dict
 
+image_models = {
+    "bmshj2018-factorized": bmshj2018_factorized,
+    "bmshj2018-factorized-relu": bmshj2018_factorized_relu,
+    "bmshj2018-hyperprior": bmshj2018_hyperprior,
+    "mbt2018-mean": mbt2018_mean,
+    "mbt2018": mbt2018,
+    "cheng2020-anchor": cheng2020_anchor,
+    "cheng2020-attn": cheng2020_attn,
+}
 
 __all__ = [
     "bmshj2018_factorized",
@@ -1479,7 +1488,7 @@ __all__ = [
     "cheng2020_attn",
 ]
 
-image_models = {
+model_architectures = {
     "bmshj2018-factorized": FactorizedPrior,
     "bmshj2018_factorized_relu": FactorizedPriorReLU,
     "bmshj2018-hyperprior": ScaleHyperprior,
@@ -1690,7 +1699,7 @@ cfgs = {
 def _load_model(
     architecture, metric, quality, pretrained=False, progress=True, **kwargs
 ):
-    if architecture not in image_models:
+    if architecture not in model_architectures:
         raise ValueError(f'Invalid architecture name "{architecture}"')
 
     if quality not in cfgs[architecture]:
@@ -1707,10 +1716,10 @@ def _load_model(
         url = model_urls[architecture][metric][quality]
         state_dict = load_state_dict_from_url(url, progress=progress)
         state_dict = load_pretrained(state_dict)
-        model = image_models[architecture].from_state_dict(state_dict)
+        model = model_architectures[architecture].from_state_dict(state_dict)
         return model
 
-    model = image_models[architecture](*cfgs[architecture][quality], **kwargs)
+    model = model_architectures[architecture](*cfgs[architecture][quality], **kwargs)
     return model
 
 
