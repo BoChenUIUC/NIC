@@ -137,7 +137,7 @@ def update_registered_buffers(
             dtype,
         )
 
-
+from typing import cast
 class CompressionModel(nn.Module):
     """Base class for constructing an auto-encoder with any number of
     EntropyBottleneck or GaussianConditional modules.
