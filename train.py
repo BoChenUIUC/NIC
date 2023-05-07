@@ -172,7 +172,7 @@ def save_checkpoint(state, is_best, lmbda, model_name, savedir):
     ckpt_path = savedir + f'{model_name}_{lmbda}_ckpt.pth'
     torch.save(state, ckpt_path)
     if is_best:
-        shutil.copyfile(filename, savedir + f'{model_name}_{lmbda}_best.pth')
+        shutil.copyfile(ckpt_path, savedir + f'{model_name}_{lmbda}_best.pth')
 
 
 def parse_args(argv):
