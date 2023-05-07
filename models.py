@@ -144,6 +144,7 @@ class CompressionModel(nn.Module):
     """
 
     def load_state_dict(self, state_dict, strict=True):
+        print('???')
         for name, module in self.named_modules():
             if not any(x.startswith(name) for x in state_dict.keys()):
                 continue
