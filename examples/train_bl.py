@@ -311,8 +311,8 @@ def main(argv):
     criterion = RateDistortionLoss(lmbda=args.lmbda)
 
     # TODO: BASELINE
-    mbt2018_model = mbt2018(quality=4, metric='mse', pretrained=True, progress=True)
-    net.load_state_dict(mbt2018_model.state_dict())
+    factorizedprior_model = bmshj2018_factorized(quality=4, metric='mse', pretrained=False, progress=True)
+    net.load_state_dict(factorizedprior_model.state_dict())
 
     last_epoch = 0
     if args.checkpoint:  # load from previous checkpoint
@@ -328,15 +328,15 @@ def main(argv):
     for epoch in range(last_epoch, args.epochs):
         print(f"Learning rate: {optimizer.param_groups[0]['lr']}")
         #comment if want to skip train
-        train_one_epoch(
-            net,
-            criterion,
-            train_dataloader,
-            optimizer,
-            #aux_optimizer,
-            epoch,
-            args.clip_max_norm,
-        )
+        # train_one_epoch(
+        #     net,
+        #     criterion,
+        #     train_dataloader,
+        #     optimizer,
+        #     #aux_optimizer,
+        #     epoch,
+        #     args.clip_max_norm,
+        # )
         loss = test_epoch(epoch, test_dataloader, net, criterion)
         lr_scheduler.step(loss)
 

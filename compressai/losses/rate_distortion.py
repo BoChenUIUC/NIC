@@ -74,10 +74,10 @@ class RateDistortionLoss(nn.Module):
         
         out["psnr"] = 10 * math.log10(1 / (out["mse_loss"]))
 
-        out["y_norm1"] = output["y_norm1"]
+        #out["y_norm1"] = output["y_norm1"]
         #out["y_norm2"] = output["y_norm2"]
         #out["y_norm10"] = output["y_norm10"]
-        out["q_norm"] = output["q_norm"]
+        #out["q_norm"] = output["q_norm"]
 
         if self.return_type == "all":
             return out
