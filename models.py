@@ -260,12 +260,13 @@ class SinusoidalPosEmb(nn.Module):
         emb = torch.cat((emb.sin(), emb.cos()), dim=-1)
         return emb
 
+from super_precision import Residual, PreNorm, Attention
+
 class MLPCodec(CompressionModel):
     def __init__(self, N, M, **kwargs):
         super().__init__(**kwargs)
-        self.K = 64
 
-        self.entropy_bottleneck = EntropyBottleneck(self.K)
+        self.entropy_bottleneck = EntropyBottleneck(M)
 
         self.g_a = nn.Sequential(
             conv(3, N),
@@ -275,11 +276,12 @@ class MLPCodec(CompressionModel):
             conv(N, N),
             GDN(N),
             conv(N, M),
+            Residual(PreNorm(M, Attention(M)))
         )
-        self.to_coef = nn.Linear(256*M,256*self.K)
+        # self.to_coef = nn.Linear(M,M)
 
         self.g_s = nn.Sequential(
-            conv(self.K * 3, N, kernel_size=1, stride=1),
+            conv(M * 3, N, kernel_size=1, stride=1),
             deconv(N, N),
             GDN(N, inverse=True),
             deconv(N, N),
@@ -290,7 +292,7 @@ class MLPCodec(CompressionModel):
         )
 
         # time embeddings
-        dim = self.K
+        dim = M
         time_dim = dim * 4
 
         self.x_mlp = nn.Sequential(
@@ -319,9 +321,9 @@ class MLPCodec(CompressionModel):
 
         B,C,H,W = y.size()
 
-        y = y.view(B,-1)
-        y = self.to_coef(y)
-        y = y.view(B,self.K,H,W)
+        # y = y.view(B,C,-1).permute(0,2,1)
+        # y = self.to_coef(y)
+        # y = y.permute(0,2,1).view(B,C,H,W)
 
         y_hat, y_likelihoods = self.entropy_bottleneck(y)
 
