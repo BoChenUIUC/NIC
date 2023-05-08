@@ -315,7 +315,8 @@ def parse_args(argv):
     parser.add_argument(
         "-m",
         "--model",
-        default="bmshj2018-factorized",
+        # default="bmshj2018-factorized",
+        default="cheng2020-anchor",
         #default="mbt2018-mean",
         choices=image_models.keys(),
         help="Model architecture (default: %(default)s)",
@@ -450,10 +451,10 @@ def main(argv):
     # optimizer = torch.optim.Adam([{'params': parameters}], lr=1e-4, weight_decay=5e-4)
     lr_scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, "min")
     criterion = RateDistortionLoss(lmbda=args.lmbda)
-    
+
     # TODO: BASELINE
-    factorizedprior_model = bmshj2018_factorized(quality=4, metric='mse', pretrained=True, progress=True)
-    net.load_state_dict(factorizedprior_model.state_dict())
+    pretrained_model = cheng2020_anchor(quality=1, metric='mse', pretrained=True, progress=True)
+    net.load_state_dict(pretrained_model.state_dict())
 
     last_epoch = 0
     if args.checkpoint:  # load from previous checkpoint
