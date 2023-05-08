@@ -308,7 +308,7 @@ class MLPCodec(CompressionModel):
             nn.GELU(),
             nn.Linear(time_dim, time_dim),
             nn.SiLU(),
-            nn.Linear(dim, dim)
+            nn.Linear(time_dim, dim)
         )
 
         self.N = N
