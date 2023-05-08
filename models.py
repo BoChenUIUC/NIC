@@ -291,11 +291,10 @@ class MLPCodec(CompressionModel):
         # time embeddings
         dim = M//2
         time_dim = dim * 2
-        fourier_dim = dim
 
         self.x_mlp = nn.Sequential(
             SinusoidalPosEmb(dim),
-            nn.Linear(fourier_dim, time_dim),
+            nn.Linear(dim, time_dim),
             nn.GELU(),
             nn.Linear(time_dim, time_dim),
             nn.SiLU(),
@@ -304,7 +303,7 @@ class MLPCodec(CompressionModel):
 
         self.y_mlp = nn.Sequential(
             SinusoidalPosEmb(dim),
-            nn.Linear(fourier_dim, time_dim),
+            nn.Linear(dim, time_dim),
             nn.GELU(),
             nn.Linear(time_dim, time_dim),
             nn.SiLU(),
