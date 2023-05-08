@@ -41,7 +41,7 @@ import torch.optim as optim
 from torch.utils.data import DataLoader
 from torchvision import transforms
 
-from models import image_models, bmshj2018_factorized, mbt2018_mean, cheng2020_attn, mbt2018, MLPCodec
+from models import image_models, bmshj2018_factorized, mbt2018_mean, cheng2020_attn, mbt2018, MLPCodec, cheng2020_anchor
 
 
 class AverageMeter:
