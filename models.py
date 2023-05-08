@@ -325,14 +325,10 @@ class MLPCodec(CompressionModel):
         y_hat, y_likelihoods = self.entropy_bottleneck(y)
 
         x_coord = torch.arange(H, device = x.device, dtype = torch.long)
-        x_emb = self.x_mlp(x_coord)
-        print(x_emb.size())
-        x_emb = x_emb.repeat(B,17,1,1)
-        print(x_emb.size())
+        x_emb = self.x_mlp(x_coord).repeat(B,W,1,1).permute(0,3,2,1)
 
-        x_emb = self.x_mlp(x_coord).permute(0,3,1,2)
-        y_coord = torch.arange(W, device = x.device, dtype = torch.long).repeat(B,H,1).view(B,H,W,1)
-        y_emb = self.y_mlp(y_coord).permute(0,3,1,2)
+        y_coord = torch.arange(W, device = x.device, dtype = torch.long)
+        y_emb = self.y_mlp(y_coord).repeat(B,H,1,1).permute(0,3,1,2)
 
         latent = torch.cat((y_hat,x_emb,y_emb),1)
 
