@@ -275,7 +275,7 @@ class MLPCodec(CompressionModel):
             GDN(N),
             conv(N, M),
         )
-        self.to_coef = nn.Linear(M,M)
+        self.to_coef = nn.Linear(256*M,256*M)
 
         self.g_s = nn.Sequential(
             conv(M * 3, N, kernel_size=1, stride=1),
@@ -318,9 +318,9 @@ class MLPCodec(CompressionModel):
 
         B,C,H,W = y.size()
 
-        y = y.view(B,C,-1).permute(0,2,1)
+        y = y.view(B,-1)
         y = self.to_coef(y)
-        y = y.permute(0,2,1).view(B,C,H,W)
+        y = y.view(B,C,H,W)
 
         y_hat, y_likelihoods = self.entropy_bottleneck(y)
 
