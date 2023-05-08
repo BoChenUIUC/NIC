@@ -275,10 +275,11 @@ class MLPCodec(CompressionModel):
             GDN(N),
             conv(N, M),
         )
-        self.to_coef = nn.Linear(256*M,256*M)
+        K = 64
+        self.to_coef = nn.Linear(256*M,256*K)
 
         self.g_s = nn.Sequential(
-            conv(M * 3, N, kernel_size=1, stride=1),
+            conv(K * 3, N, kernel_size=1, stride=1),
             deconv(N, N),
             GDN(N, inverse=True),
             deconv(N, N),
@@ -289,7 +290,7 @@ class MLPCodec(CompressionModel):
         )
 
         # time embeddings
-        dim = M
+        dim = K
         time_dim = dim * 4
 
         self.x_mlp = nn.Sequential(
