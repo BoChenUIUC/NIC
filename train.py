@@ -409,10 +409,7 @@ def main(argv):
     # test_transforms = transforms.Compose(
     #     [transforms.CenterCrop(args.patch_size), transforms.ToTensor()]
     # )
-    # test_transforms = transforms.ToTensor()
-    test_transforms = transforms.Compose(
-        [transforms.Resize(size=256), transforms.ToTensor()]
-    )
+    test_transforms = transforms.ToTensor()
 
     # transform = T.Compose([
     #     T.Resize(args.patch_size),
@@ -473,14 +470,15 @@ def main(argv):
     for epoch in range(last_epoch, args.epochs):
         print(f"Learning rate: {optimizer.param_groups[0]['lr']}")
         #comment if want to skip train
-        # train_one_epoch(
-        #     net,
-        #     criterion,
-        #     train_dataloader,
-        #     optimizer,
-        #     epoch,
-        #     args.clip_max_norm,
-        # )
+        train_one_epoch(
+            net,
+            criterion,
+            train_dataloader,
+            optimizer,
+            epoch,
+            args.clip_max_norm,
+        )
+        continue
         loss = test_epoch(epoch, test_dataloader, net, criterion)
         lr_scheduler.step(loss)
 
