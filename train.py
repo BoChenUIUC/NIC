@@ -41,7 +41,7 @@ import torch.optim as optim
 from torch.utils.data import DataLoader
 from torchvision import transforms
 
-from models import image_models, bmshj2018_factorized, mbt2018_mean, cheng2020_attn, mbt2018, MLPCodec
+from models import image_models, bmshj2018_factorized, mbt2018_mean, cheng2020_attn, mbt2018, MLPCodec,MLPCodec2
 
 
 class AverageMeter:
@@ -439,7 +439,7 @@ def main(argv):
     )
 
     # net = image_models[args.model](quality=4)
-    net = MLPCodec(128,128)
+    net = MLPCodec2(128,128)
     net = net.to(device)
 
     # if args.cuda and torch.cuda.device_count() > 1:

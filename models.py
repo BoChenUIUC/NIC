@@ -341,6 +341,78 @@ class MLPCodec(CompressionModel):
             },
         }
 
+class MLPCodec(CompressionModel):
+    def __init__(self, N, M, **kwargs):
+        super().__init__(**kwargs)
+
+        self.entropy_bottleneck = EntropyBottleneck(M)
+
+        self.g_a = nn.Sequential(
+            conv(3, N),
+            conv(N, N),
+            conv(N, N),
+            conv(N, N),
+        )
+        self.to_coef = nn.Linear(N,M)
+
+        self.g_s = nn.ModuleList(
+            deconv(M*2, N),
+            deconv(N*2, N),
+            deconv(N*2, N),
+            deconv(N*2, 3),
+        )
+
+        # time embeddings
+        dim = M//2
+        time_dim = dim * 2
+
+        self.x_mlp = nn.Sequential(
+            SinusoidalPosEmb(dim),
+            nn.Linear(dim, time_dim),
+            nn.GELU(),
+            nn.Linear(time_dim, time_dim),
+            nn.SiLU(),
+            nn.Linear(time_dim, dim)
+        )
+
+        self.y_mlp = nn.Sequential(
+            SinusoidalPosEmb(dim),
+            nn.Linear(dim, time_dim),
+            nn.GELU(),
+            nn.Linear(time_dim, time_dim),
+            nn.SiLU(),
+            nn.Linear(time_dim, dim)
+        )
+
+        self.N = N
+        self.M = M
+
+    def forward(self, x):
+        y = self.g_a(x)
+
+        y_hat, y_likelihoods = self.entropy_bottleneck(y)
+
+        latent = y_hat
+        for l in self.g_s:
+            x_emb, y_emb = self.shape_to_xyemb(latent)
+            latent = torch.cat((latent,x_emb,y_emb),1)
+            latent = l(F.ReLU(latent))
+
+        return {
+            "x_hat": latent,
+            "likelihoods": {
+                "y": y_likelihoods,
+            },
+        }
+
+    def shape_to_xyemb(self, size, device):
+        B,_,H,W = size
+        x_coord = torch.arange(H, device = device, dtype = torch.long)
+        x_emb = self.x_mlp(x_coord).repeat(B,W,1,1).permute(0,3,2,1)
+
+        y_coord = torch.arange(W, device = device, dtype = torch.long)
+        y_emb = self.y_mlp(y_coord).repeat(B,H,1,1).permute(0,3,1,2)
+        return x_emb, y_emb
 
 @register_model("bmshj2018-factorized")
 class FactorizedPrior(CompressionModel):
