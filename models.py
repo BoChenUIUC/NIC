@@ -252,14 +252,12 @@ class SinusoidalPosEmb(nn.Module):
         self.dim = dim
 
     def forward(self, x):
-        print(x.size())
         device = x.device
         half_dim = self.dim // 2
         emb = math.log(10000) / (half_dim - 1)
         emb = torch.exp(torch.arange(half_dim, device=device) * -emb)
         emb = x[:, None] * emb[None, :]
         emb = torch.cat((emb.sin(), emb.cos()), dim=-1)
-        print(emb.size())
         return emb
 
 class MLPCodec(CompressionModel):
@@ -326,7 +324,10 @@ class MLPCodec(CompressionModel):
 
         y_hat, y_likelihoods = self.entropy_bottleneck(y)
 
-        x_coord = torch.arange(H, device = x.device, dtype = torch.long).repeat(B,W,1).permute(0,2,1).view(B,H,W,1)
+        x_coord = torch.arange(H, device = x.device, dtype = torch.long)
+        x_emb = self.x_mlp(x_coord).repeat(B,1,W)
+        print(x_emb.size())
+
         x_emb = self.x_mlp(x_coord).permute(0,3,1,2)
         y_coord = torch.arange(W, device = x.device, dtype = torch.long).repeat(B,H,1).view(B,H,W,1)
         y_emb = self.y_mlp(y_coord).permute(0,3,1,2)
