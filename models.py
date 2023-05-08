@@ -356,33 +356,33 @@ class MLPCodec2(CompressionModel):
         self.to_coef = nn.Linear(N,M)
 
         self.g_s = nn.ModuleList(
-            deconv(M*2, N),
-            deconv(N*2, N),
-            deconv(N*2, N),
-            deconv(N*2, 3),
+            [deconv(M*2, N),
+                        deconv(N*2, N),
+                        deconv(N*2, N),
+                        deconv(N*2, 3),]
         )
 
         # time embeddings
         dim = M//2
         time_dim = dim * 2
 
-        self.x_mlp = nn.Sequential(
-            SinusoidalPosEmb(dim),
-            nn.Linear(dim, time_dim),
-            nn.GELU(),
-            nn.Linear(time_dim, time_dim),
-            nn.SiLU(),
-            nn.Linear(time_dim, dim)
-        )
+        self.x_mlps = nn.ModuleList([nn.Sequential(
+                            SinusoidalPosEmb(dim),
+                            nn.Linear(dim, time_dim),
+                            nn.GELU(),
+                            nn.Linear(time_dim, time_dim),
+                            nn.SiLU(),
+                            nn.Linear(time_dim, dim)
+                        ) for _ in range(4)])
 
-        self.y_mlp = nn.Sequential(
-            SinusoidalPosEmb(dim),
-            nn.Linear(dim, time_dim),
-            nn.GELU(),
-            nn.Linear(time_dim, time_dim),
-            nn.SiLU(),
-            nn.Linear(time_dim, dim)
-        )
+        self.y_mlps = nn.ModuleList([nn.Sequential(
+                            SinusoidalPosEmb(dim),
+                            nn.Linear(dim, time_dim),
+                            nn.GELU(),
+                            nn.Linear(time_dim, time_dim),
+                            nn.SiLU(),
+                            nn.Linear(time_dim, dim)
+                        ) for _ in range(4)])
 
         self.N = N
         self.M = M
@@ -393,8 +393,8 @@ class MLPCodec2(CompressionModel):
         y_hat, y_likelihoods = self.entropy_bottleneck(y)
 
         latent = y_hat
-        for l in self.g_s:
-            x_emb, y_emb = self.shape_to_xyemb(latent)
+        for l,x_mlp,y_mlp in zip(self.g_s,self.x_mlps, self.y_mlps):
+            x_emb, y_emb = self.shape_to_xyemb(x_mlp,y_mlp,latent.size(),x.device)
             latent = torch.cat((latent,x_emb,y_emb),1)
             latent = l(F.ReLU(latent))
 
@@ -405,13 +405,13 @@ class MLPCodec2(CompressionModel):
             },
         }
 
-    def shape_to_xyemb(self, size, device):
+    def shape_to_xyemb(self, x_mlp, y_mlp, size, device):
         B,_,H,W = size
         x_coord = torch.arange(H, device = device, dtype = torch.long)
-        x_emb = self.x_mlp(x_coord).repeat(B,W,1,1).permute(0,3,2,1)
+        x_emb = x_mlp(x_coord).repeat(B,W,1,1).permute(0,3,2,1)
 
         y_coord = torch.arange(W, device = device, dtype = torch.long)
-        y_emb = self.y_mlp(y_coord).repeat(B,H,1,1).permute(0,3,1,2)
+        y_emb = y_mlp(y_coord).repeat(B,H,1,1).permute(0,3,1,2)
         return x_emb, y_emb
 
 @register_model("bmshj2018-factorized")
