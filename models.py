@@ -263,8 +263,9 @@ class SinusoidalPosEmb(nn.Module):
 class MLPCodec(CompressionModel):
     def __init__(self, N, M, **kwargs):
         super().__init__(**kwargs)
+        self.K = 64
 
-        self.entropy_bottleneck = EntropyBottleneck(M)
+        self.entropy_bottleneck = EntropyBottleneck(self.K)
 
         self.g_a = nn.Sequential(
             conv(3, N),
@@ -275,7 +276,6 @@ class MLPCodec(CompressionModel):
             GDN(N),
             conv(N, M),
         )
-        self.K = 64
         self.to_coef = nn.Linear(256*M,256*self.K)
 
         self.g_s = nn.Sequential(
