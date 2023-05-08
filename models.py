@@ -359,10 +359,10 @@ class MLPCodec2(CompressionModel):
         )
         self.map_to_coef = nn.Linear(256*M,self.K)
 
-        self.coef_to_map = nn.Linear(self.K,256*M)
+        self.coef_to_map = nn.Linear(self.K,self.K)
 
         self.g_s = nn.Sequential(
-            deconv(M*3, N),
+            deconv(M*2 + self.K, N),
             GDN(N, inverse=True),
             deconv(N, N),
             GDN(N, inverse=True),
@@ -406,9 +406,7 @@ class MLPCodec2(CompressionModel):
 
         y_hat, y_likelihoods = self.entropy_bottleneck(y)
 
-        latent_emb = self.coef_to_map(y_hat).repeat(11,12,1,1)
-        print(latent_emb.size())
-        exit(0)
+        latent_emb = self.coef_to_map(y_hat).repeat(H,W,1,1).permute(2,3,0,1)
 
         x_coord = torch.arange(H, device = x.device, dtype = torch.long)
         x_emb = self.x_mlp(x_coord).repeat(B,W,1,1).permute(0,3,2,1)
