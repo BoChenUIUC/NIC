@@ -32,6 +32,7 @@ from typing import Dict
 
 from torch import Tensor
 from torch.hub import load_state_dict_from_url
+import math
 
 import warnings
 
@@ -325,10 +326,8 @@ class MLPCodec(CompressionModel):
         y_hat, y_likelihoods = self.entropy_bottleneck(y)
 
         x_coord = torch.arange(H, device = x.device, dtype = torch.long).repeat(B,W,1).permute(0,2,1).view(B,H,W,1)
-        print(x_coord)
         x_emb = self.x_mlp(x_coord).permute(0,3,1,2)
         y_coord = torch.arange(W, device = x.device, dtype = torch.long).repeat(B,H,1).view(B,H,W,1)
-        print(y_coord)
         y_emb = self.y_mlp(y_coord).permute(0,3,1,2)
 
         latent = torch.cat((y_hat,x_emb,y_emb),1)
