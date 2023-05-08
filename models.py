@@ -252,6 +252,7 @@ class SinusoidalPosEmb(nn.Module):
         self.dim = dim
 
     def forward(self, x):
+        print(x.size())
         device = x.device
         half_dim = self.dim // 2
         emb = math.log(10000) / (half_dim - 1)
@@ -299,7 +300,7 @@ class MLPCodec(CompressionModel):
             nn.GELU(),
             nn.Linear(time_dim, time_dim),
             nn.SiLU(),
-            nn.Linear(dim, dim)
+            nn.Linear(time_dim, dim)
         )
 
         self.y_mlp = nn.Sequential(
