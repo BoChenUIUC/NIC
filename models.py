@@ -396,7 +396,7 @@ class MLPCodec2(CompressionModel):
         for l,x_mlp,y_mlp in zip(self.g_s,self.x_mlps, self.y_mlps):
             x_emb, y_emb = self.shape_to_xyemb(x_mlp,y_mlp,latent.size(),x.device)
             latent = torch.cat((latent,x_emb,y_emb),1)
-            latent = l(F.ReLU(latent))
+            latent = l(F.relu(latent))
 
         return {
             "x_hat": latent,
