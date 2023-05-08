@@ -409,7 +409,10 @@ def main(argv):
     # test_transforms = transforms.Compose(
     #     [transforms.CenterCrop(args.patch_size), transforms.ToTensor()]
     # )
-    test_transforms = transforms.ToTensor()
+    # test_transforms = transforms.ToTensor()
+    test_transforms = transforms.Compose(
+        [transforms.Resize(size=256), transforms.ToTensor()]
+    )
 
     # transform = T.Compose([
     #     T.Resize(args.patch_size),
