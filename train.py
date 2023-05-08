@@ -446,7 +446,7 @@ def main(argv):
     #     net = CustomDataParallel(net)
 
     # optimizer, aux_optimizer = configure_optimizers(net, args)
-    parameters = net.optim_parameters()
+    parameters = net.parameters()
     optimizer = torch.optim.Adam([{'params': parameters}], lr=1e-4, weight_decay=5e-4)
     lr_scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, "min")
     criterion = RateDistortionLoss(lmbda=args.lmbda)
