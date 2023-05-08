@@ -350,11 +350,11 @@ class MLPCodec2(CompressionModel):
 
         self.g_a = nn.Sequential(
             conv(3, N),
-            GDN(N),,
+            GDN(N),
             conv(N, N),
-            GDN(N),,
+            GDN(N),
             conv(N, N),
-            GDN(N),,
+            GDN(N),
             conv(N, M)
         )
         self.map_to_coef = nn.Linear(256*M,self.K)
