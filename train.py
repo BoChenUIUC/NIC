@@ -317,7 +317,7 @@ def parse_args(argv):
         "--model",
         default="bmshj2018-factorized",
         #default="mbt2018-mean",
-        choices=image_models.keys(),
+        # choices=image_models.keys(),
         help="Model architecture (default: %(default)s)",
     )
     parser.add_argument(
