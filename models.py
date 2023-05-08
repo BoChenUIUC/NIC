@@ -327,7 +327,7 @@ class MLPCodec(CompressionModel):
         x_coord = torch.arange(H, device = x.device, dtype = torch.long)
         x_emb = self.x_mlp(x_coord)
         print(x_emb.size())
-        x_emb = x_emb.repeat(B,1)
+        x_emb = x_emb.repeat(B,1,1)
         print(x_emb.size())
 
         x_emb = self.x_mlp(x_coord).permute(0,3,1,2)
