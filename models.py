@@ -270,25 +270,24 @@ class MLPCodec(CompressionModel):
 
         self.g_a = nn.Sequential(
             conv(3, N),
-            GDN(N),
+            nn.ReLU(),
             conv(N, N),
-            GDN(N),
+            nn.ReLU(),
             conv(N, N),
-            GDN(N),
+            nn.ReLU(),
             conv(N, N),
-            conv(N, M, kernel_size=7, stride=1),
             Residual(PreNorm(M, Attention(M)))
         )
         # self.to_coef = nn.Linear(M,M)
 
         self.g_s = nn.Sequential(
-            conv(M * 3, N, kernel_size=1, stride=1),
+            Residual(PreNorm(3*M, Attention(3*M)))
+            deconv(M*3, N),
+            nn.ReLU(),
             deconv(N, N),
-            GDN(N, inverse=True),
+            nn.ReLU(),
             deconv(N, N),
-            GDN(N, inverse=True),
-            deconv(N, N),
-            GDN(N, inverse=True),
+            nn.ReLU(),
             deconv(N, 3),
         )
 
@@ -321,10 +320,6 @@ class MLPCodec(CompressionModel):
         y = self.g_a(x)
 
         B,C,H,W = y.size()
-
-        # y = y.view(B,C,-1).permute(0,2,1)
-        # y = self.to_coef(y)
-        # y = y.permute(0,2,1).view(B,C,H,W)
 
         y_hat, y_likelihoods = self.entropy_bottleneck(y)
 
