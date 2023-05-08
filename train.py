@@ -315,8 +315,8 @@ def parse_args(argv):
     parser.add_argument(
         "-m",
         "--model",
-        # default="bmshj2018-factorized",
-        default="cheng2020-anchor",
+        default="bmshj2018-factorized",
+        # default="cheng2020-anchor",
         #default="mbt2018-mean",
         # choices=image_models.keys(),
         help="Model architecture (default: %(default)s)",
@@ -439,8 +439,8 @@ def main(argv):
         pin_memory=(device == "cuda"),
     )
 
-    # net = image_models[args.model](quality=3)
-    net = MLPCodec(128,192)
+    net = image_models[args.model](quality=3)
+    # net = MLPCodec(128,192)
     net = net.to(device)
 
     # if args.cuda and torch.cuda.device_count() > 1:
