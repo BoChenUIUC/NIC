@@ -275,7 +275,7 @@ class MLPCodec(CompressionModel):
             nn.ReLU(),
             conv(N, N),
             nn.ReLU(),
-            conv(N, N),
+            conv(N, M),
             Residual(PreNorm(M, Attention(M)))
         )
         # self.to_coef = nn.Linear(M,M)
