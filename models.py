@@ -406,7 +406,7 @@ class MLPCodec2(CompressionModel):
 
         y_hat, y_likelihoods = self.entropy_bottleneck(y)
 
-        latent_emb = self.coef_to_map(y_hat).repeat(H,W,1,1)
+        latent_emb = self.coef_to_map(y_hat)
         print(latent_emb.size())
         exit(0)
 
