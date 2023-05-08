@@ -317,7 +317,7 @@ def parse_args(argv):
         "--model",
         default="bmshj2018-factorized",
         #default="mbt2018-mean",
-        # choices=image_models.keys(),
+        choices=image_models.keys(),
         help="Model architecture (default: %(default)s)",
     )
     parser.add_argument(
@@ -438,32 +438,32 @@ def main(argv):
         pin_memory=(device == "cuda"),
     )
 
-    # net = image_models[args.model](quality=4)
-    net = MLPCodec(128,192)
+    net = image_models[args.model](quality=4)
+    # net = MLPCodec(128,192)
     net = net.to(device)
 
     # if args.cuda and torch.cuda.device_count() > 1:
     #     net = CustomDataParallel(net)
 
-    # optimizer, aux_optimizer = configure_optimizers(net, args)
-    parameters = net.parameters()
-    optimizer = torch.optim.Adam([{'params': parameters}], lr=1e-4, weight_decay=5e-4)
+    optimizer, aux_optimizer = configure_optimizers(net, args)
+    # parameters = net.parameters()
+    # optimizer = torch.optim.Adam([{'params': parameters}], lr=1e-4, weight_decay=5e-4)
     lr_scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, "min")
     criterion = RateDistortionLoss(lmbda=args.lmbda)
+    
+    # TODO: BASELINE
+    factorizedprior_model = bmshj2018_factorized(quality=4, metric='mse', pretrained=True, progress=True)
+    net.load_state_dict(factorizedprior_model.state_dict())
 
     last_epoch = 0
-    # if args.checkpoint:  # load from previous checkpoint
-    #     print("Loading", args.checkpoint)
-    #     checkpoint = torch.load(args.checkpoint, map_location=device)
-    #     last_epoch = checkpoint["epoch"] + 1
-    #     net.load_state_dict(checkpoint["state_dict"])
-    #     # optimizer.load_state_dict(checkpoint["optimizer"])
-    #     # aux_optimizer.load_state_dict(checkpoint["aux_optimizer"])
-    #     #lr_scheduler.load_state_dict(checkpoint["lr_scheduler"])
-    # else:
-    #     # TODO: BASELINE
-    #     factorizedprior_model = bmshj2018_factorized(quality=4, metric='mse', pretrained=True, progress=True)
-    #     net.load_state_dict(factorizedprior_model.state_dict())
+    if args.checkpoint:  # load from previous checkpoint
+        print("Loading", args.checkpoint)
+        checkpoint = torch.load(args.checkpoint, map_location=device)
+        last_epoch = checkpoint["epoch"] + 1
+        net.load_state_dict(checkpoint["state_dict"])
+        # optimizer.load_state_dict(checkpoint["optimizer"])
+        # aux_optimizer.load_state_dict(checkpoint["aux_optimizer"])
+        #lr_scheduler.load_state_dict(checkpoint["lr_scheduler"])
 
     best_loss = float("inf")
     for epoch in range(last_epoch, args.epochs):
