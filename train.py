@@ -439,7 +439,7 @@ def main(argv):
         pin_memory=(device == "cuda"),
     )
 
-    net = image_models[args.model](quality=4)
+    net = image_models[args.model](quality=1)
     # net = MLPCodec(128,192)
     net = net.to(device)
 
