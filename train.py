@@ -317,7 +317,8 @@ def parse_args(argv):
         "--model",
         # default="bmshj2018-factorized",
         # default="cheng2020-anchor",
-        default="mbt2018-mean",
+        # default="mbt2018-mean",
+        default="mbt2018",
         choices=image_models.keys(),
         help="Model architecture (default: %(default)s)",
     )
@@ -453,7 +454,7 @@ def main(argv):
     criterion = RateDistortionLoss(lmbda=args.lmbda)
 
     # TODO: BASELINE
-    pretrained_model = mbt2018_mean(quality=1, metric='mse', pretrained=True, progress=True)
+    pretrained_model = mbt2018(quality=1, metric='mse', pretrained=True, progress=True)
     net.load_state_dict(pretrained_model.state_dict())
 
     last_epoch = 0
