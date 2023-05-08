@@ -341,7 +341,7 @@ class MLPCodec(CompressionModel):
             },
         }
 
-class MLPCodec(CompressionModel):
+class MLPCodec2(CompressionModel):
     def __init__(self, N, M, **kwargs):
         super().__init__(**kwargs)
 
