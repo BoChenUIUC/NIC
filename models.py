@@ -340,6 +340,91 @@ class MLPCodec(CompressionModel):
             },
         }
 
+
+class MLPCodec2(CompressionModel):
+    def __init__(self, N, M, **kwargs):
+        super().__init__(**kwargs)
+
+        self.K = 1024
+        self.entropy_bottleneck = EntropyBottleneck(self.K)
+
+        self.g_a = nn.Sequential(
+            conv(3, N),
+            GDN(N),,
+            conv(N, N),
+            GDN(N),,
+            conv(N, N),
+            GDN(N),,
+            conv(N, M)
+        )
+        self.map_to_coef = nn.Linear(256*M,self.K)
+
+        self.coef_to_map = nn.Linear(self.K,256*M)
+
+        self.g_s = nn.Sequential(
+            deconv(M*3, N),
+            GDN(N, inverse=True),
+            deconv(N, N),
+            GDN(N, inverse=True),
+            deconv(N, N),
+            GDN(N, inverse=True),
+            deconv(N, 3),
+        )
+
+        # time embeddings
+        dim = M
+        time_dim = dim * 4
+
+        self.x_mlp = nn.Sequential(
+            SinusoidalPosEmb(dim),
+            nn.Linear(dim, time_dim),
+            nn.GELU(),
+            nn.Linear(time_dim, time_dim),
+            nn.SiLU(),
+            nn.Linear(time_dim, dim)
+        )
+
+        self.y_mlp = nn.Sequential(
+            SinusoidalPosEmb(dim),
+            nn.Linear(dim, time_dim),
+            nn.GELU(),
+            nn.Linear(time_dim, time_dim),
+            nn.SiLU(),
+            nn.Linear(time_dim, dim)
+        )
+
+        self.N = N
+        self.M = M
+
+    def forward(self, x):
+        y = self.g_a(x)
+
+        B,C,H,W = y.size()
+
+        y = y.view(B,-1)
+        y = self.map_to_coef(y)
+
+        y_hat, y_likelihoods = self.entropy_bottleneck(y)
+
+        latent_emb = self.coef_to_map(y_hat).view(B,C,H,W)
+
+        x_coord = torch.arange(H, device = x.device, dtype = torch.long)
+        x_emb = self.x_mlp(x_coord).repeat(B,W,1,1).permute(0,3,2,1)
+
+        y_coord = torch.arange(W, device = x.device, dtype = torch.long)
+        y_emb = self.y_mlp(y_coord).repeat(B,H,1,1).permute(0,3,1,2)
+
+        latent = torch.cat((latent_emb,x_emb,y_emb),1)
+
+        x_hat = self.g_s(latent)
+
+        return {
+            "x_hat": x_hat,
+            "likelihoods": {
+                "y": y_likelihoods,
+            },
+        }
+
 @register_model("bmshj2018-factorized")
 class FactorizedPrior(CompressionModel):
     r"""Factorized Prior model from J. Balle, D. Minnen, S. Singh, S.J. Hwang,
