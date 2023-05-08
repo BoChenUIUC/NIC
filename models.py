@@ -144,7 +144,6 @@ class CompressionModel(nn.Module):
     """
 
     def load_state_dict(self, state_dict, strict=True):
-        print('???')
         for name, module in self.named_modules():
             if not any(x.startswith(name) for x in state_dict.keys()):
                 continue
@@ -244,8 +243,106 @@ def deconv(in_channels, out_channels, kernel_size=5, stride=2):
         padding=kernel_size // 2,
     )
 
+# sinusoidal positional embeds
 
-#TODO:BASELINE
+class SinusoidalPosEmb(nn.Module):
+    def __init__(self, dim):
+        super().__init__()
+        self.dim = dim
+
+    def forward(self, x):
+        device = x.device
+        half_dim = self.dim // 2
+        emb = math.log(10000) / (half_dim - 1)
+        emb = torch.exp(torch.arange(half_dim, device=device) * -emb)
+        emb = x[:, None] * emb[None, :]
+        emb = torch.cat((emb.sin(), emb.cos()), dim=-1)
+        return emb
+
+class MLPCodec(CompressionModel):
+    def __init__(self, N, M, **kwargs):
+        super().__init__(**kwargs)
+
+        self.entropy_bottleneck = EntropyBottleneck(M)
+
+        self.g_a = nn.Sequential(
+            conv(3, N),
+            GDN(N),
+            conv(N, N),
+            GDN(N),
+            conv(N, N),
+            GDN(N),
+            conv(N, N),
+        )
+        self.to_coef = nn.Linear(N,M)
+
+        self.g_s = nn.Sequential(
+            conv(M * 2, N, kernel_size=1, stride=1)
+            deconv(N, N),
+            GDN(N, inverse=True),
+            deconv(N, N),
+            GDN(N, inverse=True),
+            deconv(N, N),
+            GDN(N, inverse=True),
+            deconv(N, 3),
+        )
+
+        # time embeddings
+        dim = M//2
+        time_dim = dim * 2
+        fourier_dim = dim
+
+        self.x_mlp = nn.Sequential(
+            SinusoidalPosEmb(dim),
+            nn.Linear(fourier_dim, time_dim),
+            nn.GELU(),
+            nn.Linear(time_dim, time_dim),
+            nn.SiLU(),
+            nn.Linear(dim, dim)
+        )
+
+        self.y_mlp = nn.Sequential(
+            SinusoidalPosEmb(dim),
+            nn.Linear(fourier_dim, time_dim),
+            nn.GELU(),
+            nn.Linear(time_dim, time_dim),
+            nn.SiLU(),
+            nn.Linear(dim, dim)
+        )
+
+        self.N = N
+        self.M = M
+
+    def forward(self, x):
+        y = self.g_a(x)
+
+        B,C,H,W = y.size()
+
+        y = y.view(B,C,-1).permute(0,2,1)
+        y = self.to_coef(y)
+        y = y.permute(0,2,1).view(B,C,H,W)
+
+        y_hat, y_likelihoods = self.entropy_bottleneck(y)
+
+        x_coord = torch.arange(H, device = x.device, dtype = torch.long).repeat(B,W).permute(0,2,1).view(B,H,W,1)
+        print(x_coord)
+        x_emb = self.x_mlp(x_coord).permute(0,3,1,2)
+        y_coord = torch.arange(W, device = x.device, dtype = torch.long).repeat(B,H).view(B,H,W,1)
+        print(y_coord)
+        y_emb = self.y_mlp(y_coord).permute(0,3,1,2)
+
+        latent = torch.cat((y_hat,x_emb,y_emb),1)
+
+
+        x_hat = self.g_s(latent)
+
+        return {
+            "x_hat": x_hat,
+            "likelihoods": {
+                "y": y_likelihoods,
+            },
+        }
+
 
 @register_model("bmshj2018-factorized")
 class FactorizedPrior(CompressionModel):

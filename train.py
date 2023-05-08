@@ -41,7 +41,7 @@ import torch.optim as optim
 from torch.utils.data import DataLoader
 from torchvision import transforms
 
-from models import image_models, bmshj2018_factorized, mbt2018_mean, cheng2020_attn, mbt2018
+from models import image_models, bmshj2018_factorized, mbt2018_mean, cheng2020_attn, mbt2018, MLPCodec
 
 
 class AverageMeter:
@@ -227,7 +227,7 @@ def configure_optimizers(net, args):
 
 
 def train_one_epoch(
-    model, criterion, train_dataloader, optimizer, #aux_optimizer,#
+    model, criterion, train_dataloader, optimizer,
     epoch, clip_max_norm
 ):
     model.train()
@@ -245,7 +245,6 @@ def train_one_epoch(
         d = d.to(device)
 
         optimizer.zero_grad()
-        #aux_optimizer.zero_grad()
 
         out_net = model(d)
 
@@ -254,10 +253,6 @@ def train_one_epoch(
         if clip_max_norm > 0:
             torch.nn.utils.clip_grad_norm_(model.parameters(), clip_max_norm)
         optimizer.step()
-
-        # aux_loss = model.aux_loss()
-        # aux_loss.backward()
-        # aux_optimizer.step()
 
         loss_meter.update(out_criterion["loss"].item())
         mse_loss_meter.update(out_criterion["mse_loss"].item())
@@ -443,46 +438,45 @@ def main(argv):
         pin_memory=(device == "cuda"),
     )
 
-    net = image_models[args.model](quality=4)
+    # net = image_models[args.model](quality=4)
+    net = MLPCodec(128,128)
     net = net.to(device)
 
     # if args.cuda and torch.cuda.device_count() > 1:
     #     net = CustomDataParallel(net)
 
-    optimizer, aux_optimizer = configure_optimizers(net, args)
-    # parameters = net.optim_parameters()
-    # optimizer = torch.optim.Adam([{'params': parameters}], lr=1e-6#, weight_decay=5e-4
-    # )
+    # optimizer, aux_optimizer = configure_optimizers(net, args)
+    parameters = net.optim_parameters()
+    optimizer = torch.optim.Adam([{'params': parameters}], lr=1e-4, weight_decay=5e-4)
     lr_scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, "min")
     criterion = RateDistortionLoss(lmbda=args.lmbda)
 
-    # TODO: BASELINE
-    factorizedprior_model = bmshj2018_factorized(quality=4, metric='mse', pretrained=True, progress=True)
-    net.load_state_dict(factorizedprior_model.state_dict())
-
     last_epoch = 0
-    if args.checkpoint:  # load from previous checkpoint
-        print("Loading", args.checkpoint)
-        checkpoint = torch.load(args.checkpoint, map_location=device)
-        last_epoch = checkpoint["epoch"] + 1
-        net.load_state_dict(checkpoint["state_dict"])
-        # optimizer.load_state_dict(checkpoint["optimizer"])
-        # aux_optimizer.load_state_dict(checkpoint["aux_optimizer"])
-        #lr_scheduler.load_state_dict(checkpoint["lr_scheduler"])
+    # if args.checkpoint:  # load from previous checkpoint
+    #     print("Loading", args.checkpoint)
+    #     checkpoint = torch.load(args.checkpoint, map_location=device)
+    #     last_epoch = checkpoint["epoch"] + 1
+    #     net.load_state_dict(checkpoint["state_dict"])
+    #     # optimizer.load_state_dict(checkpoint["optimizer"])
+    #     # aux_optimizer.load_state_dict(checkpoint["aux_optimizer"])
+    #     #lr_scheduler.load_state_dict(checkpoint["lr_scheduler"])
+    # else:
+    #     # TODO: BASELINE
+    #     factorizedprior_model = bmshj2018_factorized(quality=4, metric='mse', pretrained=True, progress=True)
+    #     net.load_state_dict(factorizedprior_model.state_dict())
 
     best_loss = float("inf")
     for epoch in range(last_epoch, args.epochs):
         print(f"Learning rate: {optimizer.param_groups[0]['lr']}")
         #comment if want to skip train
-        # train_one_epoch(
-        #     net,
-        #     criterion,
-        #     train_dataloader,
-        #     optimizer,
-        #     #aux_optimizer,
-        #     epoch,
-        #     args.clip_max_norm,
-        # )
+        train_one_epoch(
+            net,
+            criterion,
+            train_dataloader,
+            optimizer,
+            epoch,
+            args.clip_max_norm,
+        )
         loss = test_epoch(epoch, test_dataloader, net, criterion)
         lr_scheduler.step(loss)
 
