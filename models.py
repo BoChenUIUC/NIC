@@ -278,7 +278,7 @@ class MLPCodec(CompressionModel):
         self.to_coef = nn.Linear(N,M)
 
         self.g_s = nn.Sequential(
-            conv(M * 2, N, kernel_size=1, stride=1),
+            conv(M * 3, N, kernel_size=1, stride=1),
             deconv(N, N),
             GDN(N, inverse=True),
             deconv(N, N),
@@ -289,8 +289,8 @@ class MLPCodec(CompressionModel):
         )
 
         # time embeddings
-        dim = M//2
-        time_dim = dim * 2
+        dim = M
+        time_dim = dim * 4
 
         self.x_mlp = nn.Sequential(
             SinusoidalPosEmb(dim),
@@ -331,7 +331,6 @@ class MLPCodec(CompressionModel):
         y_emb = self.y_mlp(y_coord).repeat(B,H,1,1).permute(0,3,1,2)
 
         latent = torch.cat((y_hat,x_emb,y_emb),1)
-
 
         x_hat = self.g_s(latent)
 
