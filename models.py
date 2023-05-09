@@ -344,9 +344,6 @@ class MLPCodec2(CompressionModel):
     def __init__(self, N, M, **kwargs):
         super().__init__(**kwargs)
 
-        def __init__(self, N, M, **kwargs):
-        super().__init__(**kwargs)
-
         self.entropy_bottleneck = EntropyBottleneck(M)
 
         self.g_a = nn.Sequential(
