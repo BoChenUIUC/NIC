@@ -478,7 +478,7 @@ def main(argv):
             epoch,
             args.clip_max_norm,
         )
-        continue
+        
         loss = test_epoch(epoch, test_dataloader, net, criterion)
         lr_scheduler.step(loss)
 
