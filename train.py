@@ -352,7 +352,7 @@ def parse_args(argv):
         help="Bit-rate distortion parameter (default: %(default)s)",
     )
     parser.add_argument(
-        "--batch-size", type=int, default=16, help="Batch size (default: %(default)s)"
+        "--batch-size", type=int, default=32, help="Batch size (default: %(default)s)"
     )
     parser.add_argument(
         "--test-batch-size",
@@ -404,7 +404,7 @@ def main(argv):
     test_transforms = transforms.ToTensor()
     import torchvision.datasets as datasets
     train_dataset = datasets.ImageFolder("/home/monet/research/dataset/imagenet/",transform=train_transforms)
-    test_dataset = ImageFolder("/home/monet/research/dataset/Kodak-Lossless-True-Color-Image-Suite/", transform=test_transforms)
+    test_dataset = ImageFolder("/home/monet/research/dataset/Kodak-Lossless-True-Color-Image-Suite/PhotoCD_PCD0992/", transform=test_transforms)
     # train_dataset = ImageFolder("/home/weiluo6/CompressAI/compressai/datasets/" + args.dataset, transform=train_transforms)
     #test_dataset = ImageFolder(args.dataset, split="test", transform=test_transforms)
 
@@ -457,14 +457,14 @@ def main(argv):
     for epoch in range(last_epoch, args.epochs):
         print(f"Learning rate: {optimizer.param_groups[0]['lr']}")
         #comment if want to skip train
-        train_one_epoch(
-            net,
-            criterion,
-            train_dataloader,
-            optimizer,
-            epoch,
-            args.clip_max_norm,
-        )
+        # train_one_epoch(
+        #     net,
+        #     criterion,
+        #     train_dataloader,
+        #     optimizer,
+        #     epoch,
+        #     args.clip_max_norm,
+        # )
         
         loss = test_epoch(epoch, test_dataloader, net, criterion)
         lr_scheduler.step(loss)
