@@ -321,9 +321,7 @@ def parse_args(argv):
         # choices=image_models.keys(),
         help="Model architecture (default: %(default)s)",
     )
-    parser.add_argument(
-        "-d", "--dataset", type=str, required=True, help="Training dataset"
-    )
+    
     parser.add_argument(
         "-e",
         "--epochs",
