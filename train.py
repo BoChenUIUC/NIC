@@ -397,28 +397,16 @@ def main(argv):
         torch.manual_seed(args.seed)
         random.seed(args.seed)
 
-    # train_transforms = transforms.Compose(
-    #     [transforms.RandomCrop(args.patch_size), transforms.ToTensor()]
-    # )
     train_transforms = transforms.Compose(
         [transforms.RandomResizedCrop(size=256), transforms.RandomHorizontalFlip(), transforms.ToTensor()]
     )
 
-    # test_transforms = transforms.Compose(
-    #     [transforms.CenterCrop(args.patch_size), transforms.ToTensor()]
-    # )
     test_transforms = transforms.ToTensor()
-
-    # transform = T.Compose([
-    #     T.Resize(args.patch_size),
-    #     T.ToTensor(),
-    #     T.Normalize(mean=[0.485, 0.456, 0.406],
-    #                 std=[0.229, 0.224, 0.225])])
     import torchvision.datasets as datasets
     train_dataset = datasets.ImageFolder("/home/monet/research/dataset/imagenet/",transform=train_transforms)
+    test_dataset = ImageFolder("/home/monet/research/dataset/Kodak-Lossless-True-Color-Image-Suite/", transform=test_transforms)
     # train_dataset = ImageFolder("/home/weiluo6/CompressAI/compressai/datasets/" + args.dataset, transform=train_transforms)
     #test_dataset = ImageFolder(args.dataset, split="test", transform=test_transforms)
-    test_dataset = ImageFolder("/home/monet/research/dataset/Kodak/", transform=test_transforms)
 
     device = "cuda" if args.cuda and torch.cuda.is_available() else "cpu"
 
