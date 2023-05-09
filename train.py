@@ -440,7 +440,7 @@ def main(argv):
     )
 
     # net = image_models[args.model](quality=3)
-    net = MLPCodec2(128,192)
+    net = MLPCodec(128,192)
     net = net.to(device)
 
     # if args.cuda and torch.cuda.device_count() > 1:
