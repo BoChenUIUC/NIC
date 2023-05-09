@@ -280,7 +280,7 @@ class MLPCodec(CompressionModel):
         )
 
         self.g_s = nn.Sequential(
-            conv(3*M, 3*M, kernel_size=1, stride=1),
+            conv(3*M, 3*M, kernel_size=7, stride=1),
             deconv(3*M, N),
             GDN(N, inverse=True),
             deconv(N, N),
