@@ -149,7 +149,7 @@ def line_plot(XX,YY,label,color,path,xlabel,ylabel,lbsize=labelsize_b,lfsize=lab
 	plt.close()
 
 
-def plot_RD_tradeoff(methods = ['cheng2020-attn','mbt2018','mbt2018-mean','cheng2020-attn+QR','mbt2018+QR','mbt2018-mean+QR']):
+def plot_RD_tradeoff(methods = ['cheng2020-attn','cheng2020-anchor','mbt2018','mbt2018-mean','cheng2020-attn+QR','cheng2020-anchor+QR','mbt2018+QR','mbt2018-mean+QR']):
 	bbox_to_anchor = (.47,.54)
 
 	# SPSNRs = [[32.61846537423134, 35.16243499135971, 36.386825913906094, 38.54153810071945, 40.405451371908185, 41.75280112934112, 42.9015796880722, 44.17670942020416], 
@@ -157,28 +157,38 @@ def plot_RD_tradeoff(methods = ['cheng2020-attn','mbt2018','mbt2018-mean','cheng
 	# Sbpps =  [[0.010167921769284998, 0.033496813424336254, 0.049102608978225, 0.11271780705989062, 0.19504989973211062, 0.278838702796725, 0.37827365014607994, 0.537286800275145], 
 	# 		[0.012500745584761878, 0.03349855022811375, 0.05198707885325626, 0.11722852922270624, 0.21010299721905001, 0.3225022190327757, 0.420959674954065, 0.593977216174845],]
 	SPSNRs = [[28.46,29.79,31.35,33.42],
+				[28.60, 29.94, 31.31, 33.44],
 				[28.11,29.63,31.38,33.17],
 				[27.70, 29.35, 31.12, 32.93],
 				[28.61,29.88,31.41,33.53],
+				[28.67, 30.05, 31.40, 33.45],
 				[28.17,29.73,31.39,33.13],
 				[27.73, 29.44, 31.16, 32.95]]
-	SPSNRs = np.array(SPSNRs)
-	print((SPSNRs[3:,:]-SPSNRs[:3,:]).mean(axis=1))
-	print((SPSNRs[3:,:]-SPSNRs[:3,:]).std(axis=1))
-	print((SPSNRs[3:,:]-SPSNRs[:3,:]).max(axis=1))
 	Sbpps = [[0.112,0.170,0.265,0.422],
+	[0.116, 0.180, 0.267, 0.412],
 	[0.11,0.195,0.285,0.430],
 	[0.124, 0.198, 0.307, 0.460],
 	[0.112,0.170,0.265,0.422],
+	[0.116, 0.180, 0.267, 0.412],
 	[0.11,0.195,0.285,0.430],
 	[0.124, 0.198, 0.307, 0.460]
 	]
+	SPSNRs = np.array(SPSNRs)
+	# print((SPSNRs[4:,:]-SPSNRs[:4,:]).mean(axis=1))
+	# print((SPSNRs[4:,:]-SPSNRs[:4,:]).std(axis=1))
+	# print((SPSNRs[4:,:]-SPSNRs[:4,:]).max(axis=1))
+	Sbpps = np.array(Sbpps)
+	# selected = [1,5]
+	# SPSNRs = SPSNRs[selected]
+	# Sbpps = Sbpps[selected]
+	# methods = np.array(methods)
+	# methods = methods[selected]
 	colors = ["#1f77b4", "#ff7f0e", "#2ca02c", "#d62728", "#9467bd", "#8c564b", "#e377c2", "#7f7f7f", "#bcbd22"]
 
 	line_plot(Sbpps,SPSNRs,methods,colors,
 			f'rdtradeoff.eps',
-			'BPP','PSNR (dB)',lbsize=24,lfsize=16,linewidth=2,yticks=range(29,34),
-			ncol=1,markersize=4,bbox_to_anchor=bbox_to_anchor)
+			'BPP','PSNR (dB)',lbsize=24,lfsize=16,linewidth=1,yticks=range(29,34),
+			ncol=1,markersize=2,bbox_to_anchor=bbox_to_anchor)
 
 
 plot_RD_tradeoff()
