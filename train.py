@@ -240,7 +240,7 @@ def train_one_epoch(
     psnr_meter = AverageMeter()
     bpp_loss_meter = AverageMeter()
 
-    for i, d in enumerate(train_iter):
+    for i, (d, target) in enumerate(train_iter):
         #break
         d = d.to(device)
 
@@ -401,7 +401,7 @@ def main(argv):
     #     [transforms.RandomCrop(args.patch_size), transforms.ToTensor()]
     # )
     train_transforms = transforms.Compose(
-        [transforms.RandomResizedCrop(size=256, scale=(1.0, 1.0)), transforms.ToTensor()]
+        [transforms.RandomResizedCrop(size=256), transforms.ToTensor()]
     )
 
     # test_transforms = transforms.Compose(
