@@ -401,7 +401,7 @@ def main(argv):
     #     [transforms.RandomCrop(args.patch_size), transforms.ToTensor()]
     # )
     train_transforms = transforms.Compose(
-        [transforms.RandomResizedCrop(size=256), transforms.ToTensor()]
+        [transforms.RandomResizedCrop(size=256), transforms.RandomHorizontalFlip(), transforms.ToTensor()]
     )
 
     # test_transforms = transforms.Compose(
@@ -438,7 +438,7 @@ def main(argv):
         pin_memory=(device == "cuda"),
     )
 
-    net = image_models[args.model](quality=4)
+    net = image_models[args.model](quality=1)
     # net = MLPCodec(128,192)
     net = net.to(device)
 
