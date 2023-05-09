@@ -270,24 +270,23 @@ class MLPCodec(CompressionModel):
 
         self.g_a = nn.Sequential(
             conv(3, N),
-            nn.ReLU(),
+            GDN(N),
             conv(N, N),
-            nn.ReLU(),
+            GDN(N),
             conv(N, N),
-            nn.ReLU(),
+            GDN(N),
             conv(N, M),
-            Residual(PreNorm(M, Attention(M)))
+            conv(M, M, kernel_size=7, stride=3)
         )
-        # self.to_coef = nn.Linear(M,M)
 
         self.g_s = nn.Sequential(
-            Residual(PreNorm(3*M, Attention(3*M))),
-            deconv(M*3, N),
-            nn.ReLU(),
+            conv(3*M, 3*M, kernel_size=1, stride=1),
+            deconv(3*M, N),
+            GDN(N, inverse=True),
             deconv(N, N),
-            nn.ReLU(),
+            GDN(N, inverse=True),
             deconv(N, N),
-            nn.ReLU(),
+            GDN(N, inverse=True),
             deconv(N, 3),
         )
 
@@ -345,8 +344,10 @@ class MLPCodec2(CompressionModel):
     def __init__(self, N, M, **kwargs):
         super().__init__(**kwargs)
 
-        self.K = 1024
-        self.entropy_bottleneck = EntropyBottleneck(self.K)
+        def __init__(self, N, M, **kwargs):
+        super().__init__(**kwargs)
+
+        self.entropy_bottleneck = EntropyBottleneck(M)
 
         self.g_a = nn.Sequential(
             conv(3, N),
@@ -355,13 +356,12 @@ class MLPCodec2(CompressionModel):
             GDN(N),
             conv(N, N),
             GDN(N),
-            conv(N, M)
+            conv(N, M),
+            Residual(PreNorm(M, Attention(M)))
         )
-        self.map_to_coef = nn.Linear(256*M,self.K)
-
-        self.coef_to_map = nn.Linear(self.K,256*M)
 
         self.g_s = nn.Sequential(
+            Residual(PreNorm(3*M, Attention(3*M))),
             deconv(M*3, N),
             GDN(N, inverse=True),
             deconv(N, N),
@@ -401,12 +401,7 @@ class MLPCodec2(CompressionModel):
 
         B,C,H,W = y.size()
 
-        y = y.view(B,-1)
-        y = self.map_to_coef(y)
-
         y_hat, y_likelihoods = self.entropy_bottleneck(y)
-
-        latent_emb = self.coef_to_map(y_hat).view(B,C,H,W)
 
         x_coord = torch.arange(H, device = x.device, dtype = torch.long)
         x_emb = self.x_mlp(x_coord).repeat(B,W,1,1).permute(0,3,2,1)
@@ -414,7 +409,7 @@ class MLPCodec2(CompressionModel):
         y_coord = torch.arange(W, device = x.device, dtype = torch.long)
         y_emb = self.y_mlp(y_coord).repeat(B,H,1,1).permute(0,3,1,2)
 
-        latent = torch.cat((latent_emb,x_emb,y_emb),1)
+        latent = torch.cat((y_hat,x_emb,y_emb),1)
 
         x_hat = self.g_s(latent)
 
