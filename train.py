@@ -321,7 +321,7 @@ def parse_args(argv):
         # choices=image_models.keys(),
         help="Model architecture (default: %(default)s)",
     )
-    
+
     parser.add_argument(
         "-e",
         "--epochs",
@@ -415,7 +415,7 @@ def main(argv):
     #     T.Normalize(mean=[0.485, 0.456, 0.406],
     #                 std=[0.229, 0.224, 0.225])])
     import torchvision.datasets as datasets
-    train_dataset = datasets.ImageFolder("/home/monet/research/dataset/ImageNet/",transform=train_transforms)
+    train_dataset = datasets.ImageFolder("/home/monet/research/dataset/imagenet/",transform=train_transforms)
     # train_dataset = ImageFolder("/home/weiluo6/CompressAI/compressai/datasets/" + args.dataset, transform=train_transforms)
     #test_dataset = ImageFolder(args.dataset, split="test", transform=test_transforms)
     test_dataset = ImageFolder("/home/monet/research/dataset/Kodak/", transform=test_transforms)
