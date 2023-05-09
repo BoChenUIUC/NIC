@@ -416,10 +416,11 @@ def main(argv):
     #     T.ToTensor(),
     #     T.Normalize(mean=[0.485, 0.456, 0.406],
     #                 std=[0.229, 0.224, 0.225])])
-
-    train_dataset = ImageFolder("/home/weiluo6/CompressAI/compressai/datasets/" + args.dataset, transform=train_transforms)
+    import torchvision.datasets as datasets
+    train_dataset = datasets.ImageFolder("/home/monet/research/dataset/ImageNet/",transform=train_transforms)
+    # train_dataset = ImageFolder("/home/weiluo6/CompressAI/compressai/datasets/" + args.dataset, transform=train_transforms)
     #test_dataset = ImageFolder(args.dataset, split="test", transform=test_transforms)
-    test_dataset = ImageFolder("/home/weiluo6/CompressAI/compressai/datasets/Kodak-Lossless-True-Color-Image-Suite/PhotoCD_PCD0992", transform=test_transforms)
+    test_dataset = ImageFolder("/home/monet/research/dataset/Kodak/", transform=test_transforms)
 
     device = "cuda" if args.cuda and torch.cuda.is_available() else "cpu"
 
