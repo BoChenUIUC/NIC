@@ -475,7 +475,7 @@ def main(argv):
     # optimizer, aux_optimizer = configure_optimizers(net, args)
     parameters = net.parameters()
     optimizer = torch.optim.Adam([{'params': parameters}], lr=args.learning_rate)
-    lr_scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, "min", patience=2,factor=0.5)
+    lr_scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, "min", patience=1,factor=0.5)
     criterion = RateDistortionLoss(lmbda=args.lmbda)
 
     # # TODO: BASELINE
