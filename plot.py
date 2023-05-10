@@ -209,7 +209,7 @@ def plot_RD_tradeoff(methods = ['cheng2020-attn','cheng2020-anchor','mbt2018','m
 
 	line_plot(Sbpps,SPSNRs,methods,colors,
 			f'rdtradeoff.eps',
-			'BPP','PSNR (dB)',lbsize=24,lfsize=13,linewidth=1,yticks=range(28,34),xticks=[0.1,0.15,0.2,0.25,0.3,0.35,0.4,0.45],
+			'BPP','PSNR (dB)',lbsize=18,lfsize=13,linewidth=1,yticks=range(27,35),xticks=[0.1,0.15,0.2,0.25,0.3,0.35,0.4,0.45],
 			ncol=1,markersize=2,bbox_to_anchor=bbox_to_anchor,)
 
 
