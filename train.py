@@ -273,11 +273,7 @@ def train_one_epoch(
     psnr_meter = AverageMeter()
     bpp_loss_meter = AverageMeter()
 
-    for i, tmp in enumerate(train_iter):
-        if isinstance(tmp,tuple):
-            (d, target) = tmp
-        else:
-            d = tmp
+    for i, (d, target) in enumerate(train_iter):
         #break
         d = d.to(device)
 
