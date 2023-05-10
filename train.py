@@ -184,15 +184,12 @@ class VimeoDataset(Dataset):
         
     def __getitem__(self, idx):
         base_dir = self.__septuplet_names[idx]
-        img_dir = base_dir+f'/im1.png'
+        rand_idx = torch.randint(7,(1,))+1
+        img_dir = base_dir+f'/im{rand_idx}.png'
         img = Image.open(img_dir).convert('RGB')
         if self.transform:
             return self.transform(img)
         return img
-        # if self._frame_size is not None:
-        #     i, j, h, w = transforms.RandomResizedCrop.get_params(img, (0.08, 1.0), (0.75, 1.3333333333333333))
-        #     img = transforms.functional.resized_crop(img, i, j, h, w,(self._frame_size,self._frame_size))
-        # return transforms.ToTensor()(img)
 
 from pytorch_msssim import ms_ssim
 
@@ -438,7 +435,7 @@ def main(argv):
         random.seed(args.seed)
 
     train_transforms = transforms.Compose(
-        [transforms.RandomResizedCrop(size=256), transforms.ToTensor()]
+        [transforms.RandomResizedCrop(size=256),transforms.RandomHorizontalFlip(), transforms.ToTensor()]
     )
 
     test_transforms = transforms.ToTensor()
