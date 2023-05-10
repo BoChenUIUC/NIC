@@ -184,7 +184,7 @@ class VimeoDataset(Dataset):
         
     def __getitem__(self, idx):
         base_dir = self.__septuplet_names[idx]
-        rand_idx = torch.randint(7,(1,))+1
+        rand_idx = int(torch.randint(7,(1,)))+1
         img_dir = base_dir+f'/im{rand_idx}.png'
         img = Image.open(img_dir).convert('RGB')
         if self.transform:
