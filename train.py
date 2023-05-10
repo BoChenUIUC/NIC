@@ -189,7 +189,7 @@ class VimeoDataset(Dataset):
         if self._frame_size is not None:
             i, j, h, w = transforms.RandomResizedCrop.get_params(img, (0.08, 1.0), (0.75, 1.3333333333333333))
             img = transforms.functional.resized_crop(img, i, j, h, w,(self._frame_size,self._frame_size))
-        return transforms.ToTensor()(img)
+        return transforms.ToTensor()(img),None
 
 from pytorch_msssim import ms_ssim
 
