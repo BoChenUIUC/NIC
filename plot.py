@@ -44,7 +44,33 @@ def line_plot(XX,YY,label,color,path,xlabel,ylabel,lbsize=labelsize_b,lfsize=lab
 				use_arrow=False,arrow_coord=(0.1,43),ratio=None,bbox_to_anchor=(1.1,1.2),use_doublearrow=False,
 				linestyles=None,use_text_arrow=False,fps_double_arrow=False,linewidth=None,markersize=None,
 				bandlike=False,band_colors=None,annot_bpp_per_video=False,annot_psnr_per_video=False,arrow_rotation=-45,
-				annot_loss=False):
+				annot_loss=False,zoomin=False):
+	def plot_axe(axe,xx,yy):
+		if yerr is None:
+			if linestyles is not None:
+				axe.plot(xx, yy, color = color[i], marker = markers[i], 
+					linestyle = linestyles[i], 
+					label = label[i], 
+					linewidth=linewidth, markersize=markersize)
+			else:
+				axe.plot(xx, yy, color = color[i], marker = markers[i], 
+					label = label[i], 
+					linewidth=linewidth, markersize=markersize)
+		elif bandlike:
+			if linestyles is not None:
+				axe.plot(xx, yy, color = color[i], marker = markers[i], 
+					linestyle = linestyles[i], 
+					label = label[i], 
+					linewidth=linewidth, markersize=markersize)
+			else:
+				axe.plot(xx, yy, color = color[i], marker = markers[i], 
+					label = label[i], 
+					linewidth=linewidth, markersize=markersize)
+			axe.fill_between(xx, yy - yerr[i], yy + yerr[i], color=band_colors[i], alpha=0.3)
+		else:
+			axe.errorbar(xx, yy, yerr=yerr[i], color = color[i], 
+				marker = markers[i], label = label[i], 
+				linewidth=linewidth, markersize=markersize)
 	if linewidth is None:
 		linewidth = 2
 	if markersize is None:
@@ -54,31 +80,7 @@ def line_plot(XX,YY,label,color,path,xlabel,ylabel,lbsize=labelsize_b,lfsize=lab
 	plt.grid(True, which='both', axis='both', linestyle='--')
 	for i in range(len(XX)):
 		xx,yy = XX[i],YY[i]
-		if yerr is None:
-			if linestyles is not None:
-				plt.plot(xx, yy, color = color[i], marker = markers[i], 
-					linestyle = linestyles[i], 
-					label = label[i], 
-					linewidth=linewidth, markersize=markersize)
-			else:
-				plt.plot(xx, yy, color = color[i], marker = markers[i], 
-					label = label[i], 
-					linewidth=linewidth, markersize=markersize)
-		elif bandlike:
-			if linestyles is not None:
-				plt.plot(xx, yy, color = color[i], marker = markers[i], 
-					linestyle = linestyles[i], 
-					label = label[i], 
-					linewidth=linewidth, markersize=markersize)
-			else:
-				plt.plot(xx, yy, color = color[i], marker = markers[i], 
-					label = label[i], 
-					linewidth=linewidth, markersize=markersize)
-			plt.fill_between(xx, yy - yerr[i], yy + yerr[i], color=band_colors[i], alpha=0.3)
-		else:
-			plt.errorbar(xx, yy, yerr=yerr[i], color = color[i], 
-				marker = markers[i], label = label[i], 
-				linewidth=linewidth, markersize=markersize)
+		plot_axe(ax,xx,yy)
 	plt.xlabel(xlabel, fontsize = lbsize)
 	plt.ylabel(ylabel, fontsize = lbsize)
 	if xticks is not None:
@@ -144,13 +146,32 @@ def line_plot(XX,YY,label,color,path,xlabel,ylabel,lbsize=labelsize_b,lfsize=lab
 		ax.set_aspect(abs((xright-xleft)/(ybottom-ytop))*ratio)
 	# plt.xlim((0.8,3.2))
 	# plt.ylim((-40,90))
+	if zoomin:
+		# create a second axes object for the inset plot
+		axins = ax.inset_axes([0, 1, 0.8, 0.4])
+
+		# plot the zoomed-in data on the inset plot
+		for i in [0,1,4,5]:
+			xx,yy = XX[i],YY[i]
+			plot_axe(axins,xx,yy)
+		# axins.set_xlim([-2, 2])
+		# axins.set_ylim([-0.5, 0.5])
+
+		# xleft, xright = axins.get_xlim()
+		# ybottom, ytop = axins.get_ylim()
+		# axins.set_aspect(abs((xright-xleft)/(ybottom-ytop))*0.5)
+
+		# set the location of the inset plot
+		axins.set_xticklabels('')
+		axins.set_yticklabels('')
+		ax.indicate_inset_zoom(axins)
 	plt.tight_layout()
 	fig.savefig(path,bbox_inches='tight')
 	plt.close()
 
 
 def plot_RD_tradeoff(methods = ['cheng2020-attn','cheng2020-anchor','mbt2018','mbt2018-mean','cheng2020-attn+QR','cheng2020-anchor+QR','mbt2018+QR','mbt2018-mean+QR']):
-	bbox_to_anchor = (.47,.54)
+	bbox_to_anchor = (.53,.59)
 
 	# SPSNRs = [[32.61846537423134, 35.16243499135971, 36.386825913906094, 38.54153810071945, 40.405451371908185, 41.75280112934112, 42.9015796880722, 44.17670942020416], 
 	# 		[32.25718354964256, 34.66197091174126, 36.158443320512774, 38.2797465865612, 40.04921350574494, 41.39807619094848, 42.41535145330428, 43.79857496213913],]
@@ -162,8 +183,8 @@ def plot_RD_tradeoff(methods = ['cheng2020-attn','cheng2020-anchor','mbt2018','m
 				[27.70, 29.35, 31.12, 32.93],
 				[28.61,29.88,31.41,33.53],
 				[28.67, 30.05, 31.40, 33.45],
-				[28.17,29.73,31.39,33.13],
-				[27.73, 29.44, 31.16, 32.95]]
+				[28.17,29.74,31.39,33.13],
+				[27.73, 29.44, 31.16, 32.96]]
 	Sbpps = [[0.112,0.170,0.265,0.422],
 	[0.116, 0.180, 0.267, 0.412],
 	[0.11,0.195,0.285,0.430],
@@ -174,21 +195,22 @@ def plot_RD_tradeoff(methods = ['cheng2020-attn','cheng2020-anchor','mbt2018','m
 	[0.124, 0.198, 0.307, 0.460]
 	]
 	SPSNRs = np.array(SPSNRs)
-	# print((SPSNRs[4:,:]-SPSNRs[:4,:]).mean(axis=1))
-	# print((SPSNRs[4:,:]-SPSNRs[:4,:]).std(axis=1))
-	# print((SPSNRs[4:,:]-SPSNRs[:4,:]).max(axis=1))
+	print((SPSNRs[4:,:]-SPSNRs[:4,:]).mean(axis=1))
+	print((SPSNRs[4:,:]-SPSNRs[:4,:]).std(axis=1))
+	print((SPSNRs[4:,:]-SPSNRs[:4,:]).max(axis=1))
 	Sbpps = np.array(Sbpps)
 	# selected = [1,5]
 	# SPSNRs = SPSNRs[selected]
 	# Sbpps = Sbpps[selected]
 	# methods = np.array(methods)
 	# methods = methods[selected]
-	colors = ["#1f77b4", "#ff7f0e", "#2ca02c", "#d62728", "#9467bd", "#8c564b", "#e377c2", "#7f7f7f", "#bcbd22"]
+	# colors = ["#1f77b4", "#ff7f0e", "#2ca02c", "#d62728", "#9467bd", "#8c564b", "#e377c2", "#7f7f7f", "#bcbd22"]
+	colors = ["#1f77b4", "#8c564b", "#ff7f0e", "#e377c2", "#2ca02c", "#d62728", "#7f7f7f", "#9467bd", "#bcbd22"]
 
 	line_plot(Sbpps,SPSNRs,methods,colors,
 			f'rdtradeoff.eps',
-			'BPP','PSNR (dB)',lbsize=24,lfsize=16,linewidth=1,yticks=range(29,34),
-			ncol=1,markersize=2,bbox_to_anchor=bbox_to_anchor)
+			'BPP','PSNR (dB)',lbsize=24,lfsize=13,linewidth=1,yticks=range(29,34),
+			ncol=1,markersize=2,bbox_to_anchor=bbox_to_anchor,)
 
 
 plot_RD_tradeoff()
