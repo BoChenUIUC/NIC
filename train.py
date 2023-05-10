@@ -156,7 +156,43 @@ class ImageFolder(Dataset):
 
     def __len__(self):
         return len(self.samples)
-
+     
+class VimeoDataset(Dataset):
+    def __init__(self, root_dir, frame_size=None):
+        self._dataset_dir = os.path.join(root_dir,'vimeo_septuplet','sequences')
+        self._train_list_dir = os.path.join(root_dir,'vimeo_septuplet','sep_trainlist.txt')
+        self._test_list_dir = os.path.join(root_dir,'vimeo_septuplet','sep_testlist.txt')
+        self._frame_size = frame_size
+        self._total_frames = 0 # Storing file names in object
+        self.get_septuplet_names()
+        
+    def get_septuplet_names(self):
+        print("[log] Looking for septuplets in", self._dataset_dir) 
+        self.__septuplet_names = []
+        with open(self._train_list_dir,'r') as f:
+            for line in f:
+                line = line.strip()
+                self.__septuplet_names += [self._dataset_dir + '/' + line]
+        with open(self._test_list_dir,'r') as f:
+            for line in f:
+                line = line.strip()
+                self.__septuplet_names += [self._dataset_dir + '/' + line]
+        print("[log] Number of septuplets found {}".format(len(self.__septuplet_names)))
+                
+    def __len__(self):
+        return len(self.__septuplet_names)
+        
+    def __getitem__(self, idx):
+        data = []
+        base_dir = self.__septuplet_names[idx]
+        img_dir = base_dir+f'/im1.png'
+        img = Image.open(img_dir).convert('RGB')
+        if self._frame_size is not None:
+            if img_idx == 1:
+                i, j, h, w = transforms.RandomResizedCrop.get_params(img, (0.08, 1.0), (0.75, 1.3333333333333333))
+            img = transforms.functional.resized_crop(img, i, j, h, w,(self._frame_size,self._frame_size))
+        data.append(transforms.ToTensor()(img))
+        return data
 
 from pytorch_msssim import ms_ssim
 
@@ -403,7 +439,8 @@ def main(argv):
 
     test_transforms = transforms.ToTensor()
     import torchvision.datasets as datasets
-    train_dataset = datasets.ImageFolder("/home/monet/research/dataset/imagenet/",transform=train_transforms)
+    # train_dataset = datasets.ImageFolder("/home/monet/research/dataset/imagenet/",transform=train_transforms)
+    train_dataset = VimeoDataset('/home/monet/research/dataset/vimeo/', frame_size=256) 
     test_dataset = ImageFolder("/home/monet/research/dataset/Kodak-Lossless-True-Color-Image-Suite/PhotoCD_PCD0992/", transform=test_transforms)
     # train_dataset = ImageFolder("/home/weiluo6/CompressAI/compressai/datasets/" + args.dataset, transform=train_transforms)
     #test_dataset = ImageFolder(args.dataset, split="test", transform=test_transforms)
