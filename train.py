@@ -464,7 +464,8 @@ def main(argv):
         pin_memory=(device == "cuda"),
     )
 
-    net = image_models[args.model](quality=1)
+    # net = image_models[args.model](quality=1)
+    net = bmshj2018_factorized(quality=1, metric='mse', pretrained=False, progress=True)
     # net = MLPCodec(128,192)
     net = net.to(device)
 
@@ -478,7 +479,7 @@ def main(argv):
     criterion = RateDistortionLoss(lmbda=args.lmbda)
 
     # # TODO: BASELINE
-    # pretrained_model = cheng2020_anchor(quality=3, metric='mse', pretrained=True, progress=True)
+    # pretrained_model = bmshj2018_factorized(quality=3, metric='mse', pretrained=False, progress=True)
     # net.load_state_dict(pretrained_model.state_dict())
 
     last_epoch = 0
