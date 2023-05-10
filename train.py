@@ -158,7 +158,7 @@ class ImageFolder(Dataset):
         return len(self.samples)
      
 class VimeoDataset(Dataset):
-    def __init__(self, root_dir, frame_size=None):
+    def __init__(self, root_dir, frame_size=None, transform=None):
         self._dataset_dir = os.path.join(root_dir,'vimeo_septuplet','sequences')
         self._train_list_dir = os.path.join(root_dir,'vimeo_septuplet','sep_trainlist.txt')
         self._test_list_dir = os.path.join(root_dir,'vimeo_septuplet','sep_testlist.txt')
@@ -186,10 +186,13 @@ class VimeoDataset(Dataset):
         base_dir = self.__septuplet_names[idx]
         img_dir = base_dir+f'/im1.png'
         img = Image.open(img_dir).convert('RGB')
-        if self._frame_size is not None:
-            i, j, h, w = transforms.RandomResizedCrop.get_params(img, (0.08, 1.0), (0.75, 1.3333333333333333))
-            img = transforms.functional.resized_crop(img, i, j, h, w,(self._frame_size,self._frame_size))
-        return transforms.ToTensor()(img)
+        if self.transform:
+            return self.transform(img)
+        return img
+        # if self._frame_size is not None:
+        #     i, j, h, w = transforms.RandomResizedCrop.get_params(img, (0.08, 1.0), (0.75, 1.3333333333333333))
+        #     img = transforms.functional.resized_crop(img, i, j, h, w,(self._frame_size,self._frame_size))
+        # return transforms.ToTensor()(img)
 
 from pytorch_msssim import ms_ssim
 
@@ -435,13 +438,13 @@ def main(argv):
         random.seed(args.seed)
 
     train_transforms = transforms.Compose(
-        [transforms.RandomResizedCrop(size=256), transforms.RandomHorizontalFlip(), transforms.ToTensor()]
+        [transforms.RandomResizedCrop(size=256), transforms.ToTensor()]
     )
 
     test_transforms = transforms.ToTensor()
     import torchvision.datasets as datasets
     # train_dataset = datasets.ImageFolder("/home/monet/research/dataset/imagenet/",transform=train_transforms)
-    train_dataset = VimeoDataset('/home/monet/research/dataset/vimeo/', frame_size=256) 
+    train_dataset = VimeoDataset('/home/monet/research/dataset/vimeo/', transform=test_transforms) 
     test_dataset = ImageFolder("/home/monet/research/dataset/Kodak-Lossless-True-Color-Image-Suite/PhotoCD_PCD0992/", transform=test_transforms)
     # train_dataset = ImageFolder("/home/weiluo6/CompressAI/compressai/datasets/" + args.dataset, transform=train_transforms)
     #test_dataset = ImageFolder(args.dataset, split="test", transform=test_transforms)
