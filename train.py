@@ -440,8 +440,8 @@ def main(argv):
 
     test_transforms = transforms.ToTensor()
     import torchvision.datasets as datasets
-    # train_dataset = datasets.ImageFolder("/home/monet/research/dataset/imagenet/",transform=train_transforms)
-    train_dataset = VimeoDataset('/home/monet/research/dataset/vimeo/', transform=test_transforms) 
+    train_dataset = datasets.ImageFolder("/home/monet/research/dataset/imagenet/",transform=train_transforms)
+    # train_dataset = VimeoDataset('/home/monet/research/dataset/vimeo/', transform=test_transforms) 
     test_dataset = ImageFolder("/home/monet/research/dataset/Kodak-Lossless-True-Color-Image-Suite/PhotoCD_PCD0992/", transform=test_transforms)
     # train_dataset = ImageFolder("/home/weiluo6/CompressAI/compressai/datasets/" + args.dataset, transform=train_transforms)
     #test_dataset = ImageFolder(args.dataset, split="test", transform=test_transforms)
@@ -474,7 +474,7 @@ def main(argv):
     # optimizer, aux_optimizer = configure_optimizers(net, args)
     parameters = net.parameters()
     optimizer = torch.optim.Adam([{'params': parameters}], lr=args.learning_rate)
-    lr_scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, "min", patience=3,factor=0.5)
+    lr_scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, "min", patience=2,factor=0.5)
     criterion = RateDistortionLoss(lmbda=args.lmbda)
 
     # # TODO: BASELINE
