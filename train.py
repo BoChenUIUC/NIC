@@ -436,7 +436,7 @@ def main(argv):
         random.seed(args.seed)
 
     train_transforms = transforms.Compose(
-        [transforms.RandomResizedCrop(size=256),transforms.ToTensor()]
+        [transforms.RandomResizedCrop(size=256),transforms.RandomHorizontalFlip(), transforms.ToTensor()]
     )
 
     test_transforms = transforms.ToTensor()
