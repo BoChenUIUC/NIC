@@ -227,7 +227,10 @@ class RateDistortionLoss(nn.Module):
         #BASELINE LOSS:
         out["loss"] = self.lmbda * distortion + out["bpp_loss"]
         
-        out["psnr"] = 10 * math.log10(1 / (out["mse_loss"]))
+        if self.metric == ms_ssim:
+            out['psnr'] = -10 * math.log10(distortion)
+        else:
+            out["psnr"] = 10 * math.log10(1 / (out["mse_loss"]))
 
         #out["y_norm1"] = output["y_norm1"]
         #out["y_norm2"] = output["y_norm2"]
@@ -461,7 +464,8 @@ def main(argv):
     )
 
     # net = image_models[args.model](quality=1)
-    net = bmshj2018_factorized(quality=1, metric='mse', pretrained=False, progress=True)
+    # bmshj2018_factorized, mbt2018_mean, cheng2020_attn, mbt2018
+    net = bmshj2018_factorized(quality=1, metric='ms-ssim', pretrained=False, progress=True)
     # net = MLPCodec(128,192)
     net = net.to(device)
 
@@ -492,16 +496,17 @@ def main(argv):
     for epoch in range(last_epoch, args.epochs):
         print(f"Learning rate: {optimizer.param_groups[0]['lr']}")
         #comment if want to skip train
-        train_one_epoch(
-            net,
-            criterion,
-            train_dataloader,
-            optimizer,
-            epoch,
-            args.clip_max_norm,
-        )
+        # train_one_epoch(
+        #     net,
+        #     criterion,
+        #     train_dataloader,
+        #     optimizer,
+        #     epoch,
+        #     args.clip_max_norm,
+        # )
         
         loss = test_epoch(epoch, test_dataloader, net, criterion)
+        exit(0)
         lr_scheduler.step(loss)
 
         is_best = loss < best_loss
