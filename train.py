@@ -325,7 +325,10 @@ def test_epoch(epoch, test_dataloader, model, criterion):
             aux_loss.update(model.aux_loss())
             bpp_loss.update(out_criterion["bpp_loss"])
             loss.update(out_criterion["loss"])
-            mse_loss.update(out_criterion["mse_loss"])
+            if 'mse_loss' in out_criterion:
+                mse_loss.update(out_criterion["mse_loss"])
+            else:
+                mse_loss.update(out_criterion["ms_ssim_loss"])
             psnr.update(out_criterion["psnr"])
 
     print(
