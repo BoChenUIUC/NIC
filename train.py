@@ -468,7 +468,7 @@ def main(argv):
 
     # net = image_models[args.model](quality=1)
     # bmshj2018_factorized, mbt2018_mean, cheng2020_attn, mbt2018
-    net = cheng2020_attn(quality=2, metric='ms-ssim', pretrained=True, progress=True)
+    net = cheng2020_attn(quality=3, metric='ms-ssim', pretrained=True, progress=True)
     # net = MLPCodec(128,192)
     net = net.to(device)
 
