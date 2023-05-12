@@ -476,7 +476,7 @@ def main(argv):
     parameters = net.parameters()
     optimizer = torch.optim.Adam([{'params': parameters}], lr=args.learning_rate)
     lr_scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, "min", patience=1,factor=0.5)
-    criterion = RateDistortionLoss(lmbda=args.lmbda,metric=net.metric)
+    criterion = RateDistortionLoss(lmbda=args.lmbda,metric='ms-ssim')
 
     # # TODO: BASELINE
     # pretrained_model = bmshj2018_factorized(quality=3, metric='mse', pretrained=False, progress=True)
