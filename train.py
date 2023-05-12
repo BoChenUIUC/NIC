@@ -226,7 +226,7 @@ class RateDistortionLoss(nn.Module):
         #out["loss"] = self.lmbda * distortion + out["bpp_loss"] + 1e-3 * output["norm_sum"]
         #BASELINE LOSS:
         out["loss"] = self.lmbda * distortion + out["bpp_loss"]
-        
+        print('=======================',self.metric == ms_ssim)
         if self.metric == ms_ssim:
             out['psnr'] = -10 * math.log10(distortion)
         else:
