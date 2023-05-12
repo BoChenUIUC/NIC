@@ -226,7 +226,7 @@ class RateDistortionLoss(nn.Module):
         #out["loss"] = self.lmbda * distortion + out["bpp_loss"] + 1e-3 * output["norm_sum"]
         #BASELINE LOSS:
         out["loss"] = self.lmbda * distortion + out["bpp_loss"]
-        print('=======================',self.metric == ms_ssim)
+
         if self.metric == ms_ssim:
             out['psnr'] = -10 * math.log10(distortion)
         else:
@@ -476,7 +476,7 @@ def main(argv):
     parameters = net.parameters()
     optimizer = torch.optim.Adam([{'params': parameters}], lr=args.learning_rate)
     lr_scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, "min", patience=1,factor=0.5)
-    criterion = RateDistortionLoss(lmbda=args.lmbda)
+    criterion = RateDistortionLoss(lmbda=args.lmbda,metric=net.metric)
 
     # # TODO: BASELINE
     # pretrained_model = bmshj2018_factorized(quality=3, metric='mse', pretrained=False, progress=True)
